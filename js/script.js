@@ -6,19 +6,41 @@ console.log('hello world')
 // LEGISLATOR URL EXAMPLE
 // http://openstates.org/api/v1/legislators/?state=tx&apikey=0e85724a8f924c6aba8bd576df364eb7
 
+
+
 // define some global variables
 var legislatorsUrlRoot = "http://openstates.org/api/v1/legislators/",
-	stateUrlRoot = "http://openstates.org/api/v1/metadata/tx/",
+	stateUrlRoot = "http://openstates.org/api/v1/metadata/",
 	apiKey = "0e85724a8f924c6aba8bd576df364eb7",
 	legislatorParams = {
-		state: 'tx',
 		apikey: apiKey,
-		per_page: 20
+		per_page: 10
 	},
 	stateParams = {
 		apikey: apiKey
 	},
 	containerNode = document.querySelector('#container')
+
+var stateQuery = function(inputState) {
+	
+	legislatorParams.state = inputState
+
+	// build the urls we need
+	var legislatorsUrlFull = legislatorsUrlRoot + genParamString(legislatorParams)
+	var stateUrlFull = stateUrlRoot + inputState + '/' + genParamString(stateParams)
+
+	// request data from each url, store the promises that are returned
+	var legislatorPromise = $.getJSON(legislatorsUrlFull)
+	var statePromise = $.getJSON(stateUrlFull)
+
+	// hand our functions over to the promise objects, so they 
+	// can be invoked when the data is ready.
+	statePromise.then(stateDataHandler)
+	legislatorPromise.then(legislatorDataHandler)
+
+	console.log(legislatorsUrlFull)
+	console.log(stateUrlFull)
+}
 
 
 var genParamString = function(paramObject) {
@@ -28,14 +50,6 @@ var genParamString = function(paramObject) {
     }
     return outputString.substr(0,outputString.length - 1)
 }
-
-// build the urls we need
-var legislatorsUrlFull = legislatorsUrlRoot + genParamString(legislatorParams)
-var stateUrlFull = stateUrlRoot + genParamString(stateParams)
-
-// request data from each url, store the promises that are returned
-var legislatorPromise = $.getJSON(legislatorsUrlFull)
-var statePromise = $.getJSON(stateUrlFull)
 
 
 // define functions that will handle the data when it's ready. note that
@@ -87,11 +101,28 @@ var legislatorDataHandler = function(legislatorsArray) {
 		htmlCards += '</div>'
 	}
 	var rightContainer = document.querySelector('#rightCol')
-	rightContainer.innerHTML += htmlCards
+	rightContainer.innerHTML = htmlCards
 }
 
-// hand our functions over to the promise objects, so they 
-// can be invoked when the data is ready.
-statePromise.then(stateDataHandler)
-legislatorPromise.then(legislatorDataHandler)
+
+// s3 - We don't want just any key to set off our searchByState function, we want it to be the enter key!  Which has a keycode of 13.
+function searchByState(eventObj) {
+	if(eventObj.keyCode === 13) {
+		// Stores our input value from the user.
+		var userInput = searchBar.value
+			console.log(userInput)
+			// Creates a custom search query now with the userInput.
+			stateQuery(userInput)
+			// UI enhancement, just clears out the search bar after it has taken and stored input. :]
+			searchBar.value = ''
+	}
+}
+
+// s1 - Search bar functions,  We will first grab our DOM node which is the input bar. 
+var searchBar = document.querySelector('input')
+
+// s2 - Now we will add an event listener of keydown , and what it should do once that keydown event happens.
+searchBar.addEventListener('keydown', searchByState)
+
+
 
