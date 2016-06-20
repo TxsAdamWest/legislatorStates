@@ -7,8 +7,6 @@ a {
 	color: #555;
 }
 
-
-
 header {
 	background: lightseagreen;
 	height: 10vh;
@@ -17,7 +15,8 @@ header {
 }
 
 input {
-	margin-top: 30px;
+	padding:10px;
+	text-align: center;
 }
 
 .col {
